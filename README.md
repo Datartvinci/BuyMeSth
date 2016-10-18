@@ -1,0 +1,24 @@
+# BuyMeSth
+BuyMeSth是一个买手制代购社区，MVP+RXJAVA的实践。
+![image](https://github.com/Datartvinci/BuyMeSth/raw/master/images_folder/0.png)
+##购物请求首页
+![image](https://github.com/Datartvinci/BuyMeSth/raw/master/images_folder/1.jpg)
+##FAB
+![image](https://github.com/Datartvinci/BuyMeSth/raw/master/images_folder/2.jpg)
+##发布购物请求
+![image](https://github.com/Datartvinci/BuyMeSth/raw/master/images_folder/9.png)
+##动态
+![image](https://github.com/Datartvinci/BuyMeSth/raw/master/images_folder/3.jpg)
+##发布动态
+可以选择压缩或者不压缩图片，压缩率十分高。
+![image](https://github.com/Datartvinci/BuyMeSth/raw/master/images_folder/4.jpg)
+##聊天
+![image](https://github.com/Datartvinci/BuyMeSth/raw/master/images_folder/5.jpg)
+##个人页面
+![image](https://github.com/Datartvinci/BuyMeSth/raw/master/images_folder/6.jpg)
+##我的订单
+![image](https://github.com/Datartvinci/BuyMeSth/raw/master/images_folder/10.jpg)
+##创建订单
+![image](https://github.com/Datartvinci/BuyMeSth/raw/master/images_folder/8.jpg)
+##订单详情
+![image](https://github.com/Datartvinci/BuyMeSth/raw/master/images_folder/7.jpg)
