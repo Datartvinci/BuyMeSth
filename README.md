@@ -1,5 +1,7 @@
 # BuyMeSth
 BuyMeSth是一个买手制代购社区，MVP+RXJAVA的实践。
+![image](https://github.com/Datartvinci/BuyMeSth/raw/master/images_folder/ic_launcher_big.png)
+##登陆
 ![image](https://github.com/Datartvinci/BuyMeSth/raw/master/images_folder/0.png)
 ##购物请求首页
 ![image](https://github.com/Datartvinci/BuyMeSth/raw/master/images_folder/1.jpg)
