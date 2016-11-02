@@ -4,10 +4,13 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +23,7 @@ import edu.scau.base.R;
 public class PhotoActivity extends BaseActivity{
 
     private PhotoFragment mPhotoFragment;
+    private ProgressBar mProgressBar;
 
     public static void navigate(Activity activity, ViewGroup imagesParent, List<String> urls , int position) {
         List<View> ivs = new ArrayList<>();
@@ -35,8 +39,14 @@ public class PhotoActivity extends BaseActivity{
         data.putSerializable("viewTargetList",simpleViewTargets);
 
         data.putInt("urlposition",position);
-        ivs.get(position).setDrawingCacheEnabled(true);
         data.putSerializable("urls",urls.toArray());
+        //传递缩略图
+        ivs.get(position).setDrawingCacheEnabled(true);
+        Bitmap bmp = ivs.get(position).getDrawingCache();
+        ByteArrayOutputStream baos=new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        byte [] bitmapByte =baos.toByteArray();
+        data.putByteArray("bitmap", bitmapByte);
 
         Intent intent = new Intent(activity,PhotoActivity.class);
         intent.putExtra("data",data);
@@ -53,6 +63,14 @@ public class PhotoActivity extends BaseActivity{
         iv.setDrawingCacheEnabled(true);
         String[] urls = {url};
         data.putSerializable("urls",urls);
+
+        //传递缩略图
+        iv.setDrawingCacheEnabled(true);
+        Bitmap bmp = iv.getDrawingCache();
+        ByteArrayOutputStream baos=new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        byte [] bitmapByte =baos.toByteArray();
+        data.putByteArray("bitmap", bitmapByte);
 
         Intent intent = new Intent(activity,PhotoActivity.class);
         intent.putExtra("data",data);
@@ -72,6 +90,14 @@ public class PhotoActivity extends BaseActivity{
         data.putInt("urlposition",position);
         ivs.get(position).setDrawingCacheEnabled(true);
         data.putSerializable("urls",urls.toArray());
+
+        //传递缩略图
+        ivs.get(position).setDrawingCacheEnabled(true);
+        Bitmap bmp = ivs.get(position).getDrawingCache();
+        ByteArrayOutputStream baos=new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        byte [] bitmapByte =baos.toByteArray();
+        data.putByteArray("bitmap", bitmapByte);
 
         Intent intent = new Intent(activity,PhotoActivity.class);
         intent.putExtra("data",data);
@@ -95,7 +121,8 @@ public class PhotoActivity extends BaseActivity{
 
         mPhotoFragment = new PhotoFragment();
         mPhotoFragment.setArguments(data);
-        mPhotoFragment.setOnTransformListener(new PhotoFragment.OnTransformListener() {
+        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+        mPhotoFragment.setOnActionListener(new PhotoFragment.OnActionListener() {
             @Override
             public void onTransformStart(int type) {
 
@@ -103,10 +130,20 @@ public class PhotoActivity extends BaseActivity{
 
             @Override
             public void onTransformCompete(int type) {
-                if(type== PhotoFragment.OnTransformListener.TRANSFORM_OUT){
+                if(type== PhotoFragment.OnActionListener.TRANSFORM_OUT){
                     finish();
                     overridePendingTransition(0, 0);
                 }
+            }
+
+            @Override
+            public void onStartLoading() {
+                mProgressBar.post(()->mProgressBar.setVisibility(View.VISIBLE));
+            }
+
+            @Override
+            public void onFinishLoading() {
+                mProgressBar.post(()->mProgressBar.setVisibility(View.GONE));
             }
         });
 

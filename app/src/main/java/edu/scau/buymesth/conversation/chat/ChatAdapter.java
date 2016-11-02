@@ -213,6 +213,11 @@ public class ChatAdapter extends BaseQuickAdapter<BmobIMMessage> {
             ToastUtil.show("已复制到剪贴板");
             return false;
         });
-        helper.getView(R.id.iv_avatar).setOnClickListener(v1 -> UserInfoActivity.navigate(mActivity, item.getConversationId()));
+        helper.getView(R.id.iv_avatar).setOnClickListener(v1 -> {
+            if(helper.getItemViewType()%2==0)
+                UserInfoActivity.navigate(mActivity, BmobUser.getCurrentUser().getObjectId());
+            else
+                UserInfoActivity.navigate(mActivity, item.getConversationId());
+        });
     }
 }

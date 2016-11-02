@@ -99,7 +99,7 @@ public class MomentPublishActivity extends BaseActivity implements MyPictureAdap
         recyclerView.addItemDecoration(new SpaceItemDecoration(getResources().getDimensionPixelSize(R.dimen.dp_6)));
         recyclerView.setHasFixedSize(true);
         recyclerView.setNestedScrollingEnabled(false);
-        adapter = new MyPictureAdapter(mUrlList,null);
+        adapter = new MyPictureAdapter(mUrlList,this);
         recyclerView.setAdapter(adapter);
         adapter.setOnRecyclerViewItemClickListener((view, position) -> {
             ////这里设置点击事件

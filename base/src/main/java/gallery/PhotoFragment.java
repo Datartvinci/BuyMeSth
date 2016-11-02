@@ -2,12 +2,14 @@ package gallery;
 
 import android.app.Fragment;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toolbar;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
@@ -18,7 +20,7 @@ import java.util.List;
 
 import edu.scau.base.R;
 import photoview.PhotoViewAttacher;
-import ui.layout.SmoothImageView;
+import ui.layout.MySmoothImageView;
 
 /**
  * Created by ！ on 2016/8/31.
@@ -32,11 +34,12 @@ public class PhotoFragment extends Fragment {
     private SimpleViewTarget[] mSimpleViewTargets;
     private HackyViewPager mViewPager;
     private boolean transforming = false;
-    private OnTransformListener onTransformListener;
+    private OnActionListener onActionListener;
     private PhotoViewAttacher.OnPhotoTapListener onPhotoTapListener;
     private boolean imageLoaded = false;
 
     private  int posi;
+    private Bitmap mSmallBitmap;
 
     public PhotoFragment() {
         super();
@@ -57,6 +60,10 @@ public class PhotoFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Object[] args = (Object[]) getArguments().getSerializable("viewTargetList");
+
+        byte [] bis = getArguments().getByteArray("bitmap");
+        mSmallBitmap = BitmapFactory.decodeByteArray(bis, 0, bis.length);
+
         SimpleViewTarget[] viewTargetList = new SimpleViewTarget[args.length];
         for(int i = 0;i<args.length;i++){
             viewTargetList[i] = (SimpleViewTarget) args[i];
@@ -98,48 +105,27 @@ public class PhotoFragment extends Fragment {
     }
 
     public void transformOut(){
-        if(!imageLoaded){
-            getOnTransformListener().onTransformCompete(OnTransformListener.TRANSFORM_OUT);
-            return;
-        }
-        if(!isTransforming()){
-            transforming =true;
-            int position = mViewPager.getCurrentItem();
-            SmoothImageView smoothImageView = (SmoothImageView) mPagerAdapter.getPrimaryItem();
-            int mLocationX = mSimpleViewTargets[position].getLocationX();
-            int mLocationY = mSimpleViewTargets[position].getLocationY();
-            int mWidth = mSimpleViewTargets[position].getWidth();
-            int mHeight = mSimpleViewTargets[position].getHeight();
-            smoothImageView.setOriginalInfo(mWidth, mHeight, mLocationX, mLocationY);
-            smoothImageView.setOnTransformListener(new SmoothImageView.TransformListener() {
-                @Override
-                public void onTransformComplete(int mode) {
-                    if(getOnTransformListener() !=null)
-                        getOnTransformListener().onTransformCompete(OnTransformListener.TRANSFORM_OUT);
-                    transforming = false;
-                }
-
-                @Override
-                public void onTransformStart() {
-                    if(getOnTransformListener() !=null)
-                        getOnTransformListener().onTransformStart(OnTransformListener.TRANSFORM_OUT);
-                    transforming = true;
-                }
-            });
-            smoothImageView.transformOut();
-        }
+        int position = mViewPager.getCurrentItem();
+        MySmoothImageView smoothImageView = (MySmoothImageView) mPagerAdapter.getPrimaryItem();
+        int mLocationX = mSimpleViewTargets[position].getLocationX();
+        int mLocationY = mSimpleViewTargets[position].getLocationY();
+        int mWidth = mSimpleViewTargets[position].getWidth();
+        int mHeight = mSimpleViewTargets[position].getHeight();
+        smoothImageView.setOriginalInfo(mWidth, mHeight, mLocationX, mLocationY,true,true);
+        smoothImageView.startTranslateToOrigin();
+        smoothImageView.startScaleIn();
     }
 
     public boolean isTransforming() {
         return transforming;
     }
 
-    public OnTransformListener getOnTransformListener() {
-        return onTransformListener;
+    public OnActionListener getOnActionListener() {
+        return onActionListener;
     }
 
-    public void setOnTransformListener(OnTransformListener onTransformListener) {
-        this.onTransformListener = onTransformListener;
+    public void setOnActionListener(OnActionListener onTransformListener) {
+        this.onActionListener = onTransformListener;
     }
 
     public PhotoViewAttacher.OnPhotoTapListener getOnPhotoTapListener() {
@@ -150,18 +136,20 @@ public class PhotoFragment extends Fragment {
         this.onPhotoTapListener = onPhotoTapListener;
     }
 
-    public interface OnTransformListener{
+    public interface OnActionListener {
         int TRANSFORM_OUT = 1;
         int TRANSFORM_IN = 0;
         void onTransformStart(int type);
         void onTransformCompete(int type);
+        void onStartLoading();
+        void onFinishLoading();
     }
 
     public class MyPagerAdapter extends PagerAdapter {
 
         private List<View> viewList;
         private Object[] murls;
-        private int position;
+        private int mPosition;
 
         private View mCurrentView;
 
@@ -178,7 +166,7 @@ public class PhotoFragment extends Fragment {
             viewList = new ArrayList<>();
 
             murls = urls;
-            this.position = position;
+            this.mPosition = position;
         }
 
         @Override
@@ -188,57 +176,57 @@ public class PhotoFragment extends Fragment {
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            SmoothImageView imageView = new SmoothImageView(getActivity());
+            MySmoothImageView imageView = new MySmoothImageView(getActivity());
             imageView.setId(0);
-            if(position == this.position&& mInited ==false){
-                mInited =true;
 
-                int mLocationX = mSimpleViewTargets[position].getLocationX();
-                int mLocationY = mSimpleViewTargets[position].getLocationY();
-                int mWidth = mSimpleViewTargets[position].getWidth();
-                int mHeight = mSimpleViewTargets[position].getHeight();
+            int mLocationX = mSimpleViewTargets[position].getLocationX();
+            int mLocationY = mSimpleViewTargets[position].getLocationY();
+            int mWidth = mSimpleViewTargets[position].getWidth();
+            int mHeight = mSimpleViewTargets[position].getHeight();
 
-                imageView.setOriginalInfo(mWidth, mHeight, mLocationX, mLocationY);
-                imageView.setLayoutParams(new ViewGroup.LayoutParams(-1, -1));
-                imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                container.addView(imageView,0);
-
-                Glide.with(getActivity()).load((String) murls[position])
-                        .asBitmap()
-                        .thumbnail(0.4f)
-                        .into(new SimpleTarget<Bitmap>(){
-                            @Override
-                            public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                                if(position==posi)imageLoaded = true;
-                                imageView.setImageBitmap(resource);
+            imageView.setLayoutParams(new ViewGroup.LayoutParams(-1, -1));
+            imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            container.addView(imageView,0);
+            imageView.setOriginalInfo(mWidth, mHeight, mLocationX, mLocationY,true,!(position == mPosition&&!mInited));
+            String[] fileList = Glide.getPhotoCacheDir(getActivity()).list();
+            for(String filename:fileList){
+                System.out.println("FFFFF "+filename);
+            }
+            onActionListener.onStartLoading();
+            Glide.with(getActivity()).load((String) murls[position])
+                    .asBitmap()
+                    .into(new SimpleTarget<Bitmap>(){
+                        @Override
+                        public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                            onActionListener.onFinishLoading();
+                            if(position==posi)imageLoaded = true;
+                            imageView.setImageBitmap(resource);
+                            if(position == mPosition&&!mInited) {
+                                imageView.startTranslateToCenter();
+                                imageView.startScaleOut();
+                                mInited = true;
                             }
-                        });
-                imageView.setOnTransformListener(new SmoothImageView.TransformListener() {
+                        }
+                    });
+            if(position == mPosition&&!mInited && mSmallBitmap!=null){
+                imageView.setImageBitmap(mSmallBitmap);
+                imageView.post(new Runnable() {
                     @Override
-                    public void onTransformComplete(int mode) {
-                        transforming = false;
-                    }
-
-                    @Override
-                    public void onTransformStart() {
-                        transforming = true;
+                    public void run() {
+                        imageView.startTranslateToCenter();
                     }
                 });
-                imageView.transformIn();
             }
-            else {
-                viewList.add(imageView);
-                container.addView(imageView,0);
-                Glide.with(getActivity()).load((String) murls[position])
-                        .asBitmap()
-                        .thumbnail(0.4f)
-                        .into(new SimpleTarget<Bitmap>(){
-                            @Override
-                            public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                                imageView.setImageBitmap(resource);
-                            }
-                        });
-            }
+            imageView.setOnTransformListener(new MySmoothImageView.TransformListener() {
+                @Override
+                public void onTransformStart(int state) {
+                }
+
+                @Override
+                public void onTransformStop(int state) {
+                    if(state==0) onActionListener.onTransformCompete(OnActionListener.TRANSFORM_OUT);
+                }
+            });
             imageView.setOnPhotoTapListener(onPhotoTapListener);
             return imageView;
         }
